@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Column from "./components/Column";
 import TaskForm from "./components/TaskForm";
 import { COLUMNS } from "./columns";
+import useLocalStorage from "./hooks/useLocalStorage";
 
 const initialTasks = [
   {
@@ -31,7 +32,22 @@ const initialTasks = [
 ];
 
 export default function App() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useLocalStorage("kanban-tasks", initialTasks);
+
+  // Efecto para cambiar el título de la pestaña
+  useEffect(() => {
+    document.title = `Kanban (${tasks.length} tareas)`;
+  }, [tasks]);
+
+  // Estado para el buscador
+  const [search, setSearch] = useState("");
+
+  // Filtrar tareas usando useMemo
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((task) =>
+      task.title.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [tasks, search]);
 
   function addTask(title, priority) {
     const newTask = {
@@ -62,12 +78,20 @@ export default function App() {
 
       <TaskForm onAdd={addTask} />
 
+      {/* Buscador */}
+      <input
+        type="text"
+        placeholder="Buscar tarea..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
       <div className="board">
         {COLUMNS.map((c) => (
           <Column
             key={c.id}
             title={c.title}
-            tasks={tasks.filter((t) => t.status === c.id)}
+            tasks={filteredTasks.filter((t) => t.status === c.id)}
             onMove={moveTask}
             onRemove={removeTask}
           />
