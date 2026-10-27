@@ -1,28 +1,28 @@
-import { COLUMNS } from "../columns";
 
-export default function TaskCard({ task, onMove, onRemove }) {
+import { useBoard } from "../context/BoardContext.jsx";
+
+export default function TaskCard({ task }) {
+  const { moveTask, removeTask } = useBoard();
+
   return (
-    <article className={`card prio-${task.priority}`}>
-      <strong>{task.title}</strong>
+    <article className="task-card">
+      <h3>{task.title}</h3>
 
-      <small>Prioridad: {task.priority}</small>
+      <p>Prioridad: {task.priority}</p>
 
-      <div className="card-actions">
-        <select
-          value={task.status}
-          onChange={(e) => onMove(task.id, e.target.value)}
-        >
-          {COLUMNS.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.title}
-            </option>
-          ))}
-        </select>
+      <select
+        value={task.status}
+        onChange={(event) => moveTask(task.id, event.target.value)}
+      >
+        <option value="todo">Por hacer</option>
+        <option value="doing">En progreso</option>
+        <option value="review">Revisión</option>
+        <option value="done">Hecho</option>
+      </select>
 
-        <button onClick={() => onRemove(task.id)}>
-          Eliminar
-        </button>
-      </div>
+      <button type="button" onClick={() => removeTask(task.id)}>
+        Eliminar
+      </button>
     </article>
   );
 }

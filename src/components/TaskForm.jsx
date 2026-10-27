@@ -1,37 +1,41 @@
-import { useState } from "react";
 
-export default function TaskForm({ onAdd }) {
+import { useState } from "react";
+import { useBoard } from "../context/BoardContext.jsx";
+
+export default function TaskForm() {
+  const { addTask } = useBoard();
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("media");
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  function handleSubmit(event) {
+    event.preventDefault();
 
-    if (title.trim() === "") return;
+    if (!title.trim()) return;
 
-    onAdd(title.trim(), priority);
-
+    addTask(title.trim(), priority);
     setTitle("");
+    setPriority("media");
   }
 
   return (
-    <form className="task-form" onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit}>
       <input
+        type="text"
+        placeholder="Nombre de la tarea"
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Nueva tarea..."
+        onChange={(event) => setTitle(event.target.value)}
       />
 
       <select
         value={priority}
-        onChange={(e) => setPriority(e.target.value)}
+        onChange={(event) => setPriority(event.target.value)}
       >
         <option value="alta">Alta</option>
         <option value="media">Media</option>
         <option value="baja">Baja</option>
       </select>
 
-      <button>Agregar</button>
+      <button type="submit">Agregar</button>
     </form>
   );
 }

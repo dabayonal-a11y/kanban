@@ -1,22 +1,18 @@
-import TaskCard from "./TaskCard";
 
-export default function Column({ title, tasks, onMove, onRemove }) {
+import TaskCard from "./TaskCard.jsx";
+
+export default function Column({ title, tasks }) {
   return (
     <section className="column">
       <h2>
         {title} ({tasks.length})
       </h2>
 
-      {tasks.length === 0 && <p>Sin tareas</p>}
-
-      {tasks.map((t) => (
-        <TaskCard
-          key={t.id}
-          task={t}
-          onMove={onMove}
-          onRemove={onRemove}
-        />
-      ))}
+      <div className="task-list">
+        {tasks.map((task) => (
+          <TaskCard key={task.id} task={task} />
+        ))}
+      </div>
     </section>
   );
 }

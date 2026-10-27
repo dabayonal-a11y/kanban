@@ -1,99 +1,57 @@
-import { useEffect, useMemo, useState } from "react";
-import Column from "./components/Column";
-import TaskForm from "./components/TaskForm";
-import { COLUMNS } from "./columns";
-import useLocalStorage from "./hooks/useLocalStorage";
 
-const initialTasks = [
-  {
-    id: 1,
-    title: "Diseñar la base de datos",
-    status: "done",
-    priority: "alta",
-  },
-  {
-    id: 2,
-    title: "Crear el login",
-    status: "doing",
-    priority: "media",
-  },
-  {
-    id: 3,
-    title: "Escribir pruebas",
-    status: "todo",
-    priority: "baja",
-  },
-  {
-    id: 4,
-    title: "Preparar la demo",
-    status: "todo",
-    priority: "alta",
-  },
-];
+import { useEffect, useMemo, useState } from "react";
+import { COLUMNS } from "./columns.js";
+import Column from "./components/Column.jsx";
+import TaskForm from "./components/TaskForm.jsx";
+import { useBoard } from "./context/BoardContext.jsx";
 
 export default function App() {
-  const [tasks, setTasks] = useLocalStorage("kanban-tasks", initialTasks);
-
-  // Efecto para cambiar el título de la pestaña
-  useEffect(() => {
-    document.title = `Kanban (${tasks.length} tareas)`;
-  }, [tasks]);
-
-  // Estado para el buscador
+  const { tasks, loading, error } = useBoard();
   const [search, setSearch] = useState("");
 
-  // Filtrar tareas usando useMemo
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) =>
       task.title.toLowerCase().includes(search.toLowerCase())
     );
   }, [tasks, search]);
 
-  function addTask(title, priority) {
-    const newTask = {
-      id: Date.now(),
-      title,
-      status: "todo",
-      priority,
-    };
+  useEffect(() => {
+    document.title = `Kanban (${tasks.length} tareas)`;
+  }, [tasks.length]);
 
-    setTasks([...tasks, newTask]);
-  }
-
-  function moveTask(id, newStatus) {
-    setTasks(
-      tasks.map((t) =>
-        t.id === id ? { ...t, status: newStatus } : t
-      )
+  if (loading) {
+    return (
+      <main className="app">
+        <h1>Kanban</h1>
+        <p>Cargando tareas desde MySQL...</p>
+      </main>
     );
   }
 
-  function removeTask(id) {
-    setTasks(tasks.filter((t) => t.id !== id));
-  }
-
   return (
-    <main>
-      <h1>Kanban</h1>
+    <main className="app">
+      <h1>Kanban ({tasks.length} tareas)</h1>
 
-      <TaskForm onAdd={addTask} />
+      {error && <p role="alert">{error}</p>}
 
-      {/* Buscador */}
+      <TaskForm />
+
       <input
+        className="search"
         type="text"
         placeholder="Buscar tarea..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(event) => setSearch(event.target.value)}
       />
 
       <div className="board">
-        {COLUMNS.map((c) => (
+        {COLUMNS.map((column) => (
           <Column
-            key={c.id}
-            title={c.title}
-            tasks={filteredTasks.filter((t) => t.status === c.id)}
-            onMove={moveTask}
-            onRemove={removeTask}
+            key={column.id}
+            title={column.title}
+            tasks={filteredTasks.filter(
+              (task) => task.status === column.id
+            )}
           />
         ))}
       </div>
